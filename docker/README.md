@@ -1,0 +1,8 @@
+- Transaction 기능을 활용하기 위해 mongodb replica set을 구성해야 함을 확인
+  - prisma 에서 데이터를 생성 시 에러가 나서 알 수 있었다.
+  - `Prisma needs to perform transactions, which requires your MongoDB server to be run as a replica set`
+- replica set 이 뭔가요?
+  - https://docs.mongodb.com/manual/replication/
+  - 공식문서
+    - MongoDB의 복제 세트는 동일한 데이터 세트를 유지하는 몽고 프로세스 그룹입니다. 복제 세트는 중복성과 고가용성을 제공하며 모든 프로덕션 배포의 기반이 됩니다. 이 섹션에서는 복제 세트의 구성 요소 및 아키텍처뿐만 아니라 MongoDB의 복제에 대해 소개합니다. 이 섹션에서는 복제 세트와 관련된 일반적인 작업에 대한 자습서도 제공합니다.
+- 따라서 별도의 Dockerfile을 만들어서 mongodb replica set을 구성하도록 한다.
