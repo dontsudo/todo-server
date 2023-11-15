@@ -1,9 +1,11 @@
-import argon from 'argon2'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import { CreateUserSchema, UserWithoutPasswordSchema } from '../users/schema'
-import { ErrorSchema } from '../errors'
-import { LoginSchema } from './schema'
-import { FastifyInstance } from 'fastify'
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import argon from 'argon2';
+import { FastifyInstance } from 'fastify';
+
+import { signAccessToken } from '../../libs/jwt';
+import { ErrorSchema } from '../errors';
+import { CreateUserSchema, UserWithoutPasswordSchema } from '../users/schema';
+import { LoginSchema } from './schema';
 
 const authRoute = async (fastify: FastifyInstance) => {
   fastify
@@ -20,31 +22,37 @@ const authRoute = async (fastify: FastifyInstance) => {
         },
       },
       async (request, reply) => {
-        const { name, email, password } = request.body
+        const { name, email, password } = request.body;
+
         const userExists = await fastify.prisma.user.findUnique({
           where: {
             email,
           },
-        })
-
+        });
         if (userExists) {
-          return reply.status(400).send({
-            message: 'User already exists',
-          })
+          reply.status(400).send({ message: 'User already exists' });
+          return;
         }
 
-        const hashedPassword = await argon.hash(password, {
-          type: argon.argon2id,
-        })
+        const hashedPassword = await argon.hash(password);
         const user = await fastify.prisma.user.create({
           data: {
             name,
             email,
             password: hashedPassword,
           },
-        })
+        });
 
-        reply.send(user)
+        const access_token = await signAccessToken({
+          id: user.id,
+          email: user.email,
+        });
+
+        reply.setCookie('access_token', access_token, {
+          httpOnly: true,
+          path: '/',
+        });
+        reply.status(201).send(user);
       },
     )
     .post(
@@ -59,31 +67,36 @@ const authRoute = async (fastify: FastifyInstance) => {
         },
       },
       async (request, reply) => {
-        const { email, password } = request.body
+        const { email, password } = request.body;
 
         const user = await fastify.prisma.user.findUnique({
           where: {
             email,
           },
-        })
-
+        });
         if (!user) {
-          return reply.status(400).send({
-            message: 'User not found',
-          })
+          reply.status(400).send({ message: 'User not found' });
+          return;
         }
 
-        const passwordMatches = await argon.verify(user.password, password)
-
+        const passwordMatches = await argon.verify(user.password, password);
         if (!passwordMatches) {
-          return reply.status(400).send({
-            message: 'Password does not match',
-          })
+          reply.status(400).send({ message: 'Password does not match' });
+          return;
         }
 
-        reply.send(user)
-      },
-    )
-}
+        const access_token = await signAccessToken({
+          id: user.id,
+          email: user.email,
+        });
 
-export default authRoute
+        reply.setCookie('access_token', access_token, {
+          httpOnly: true,
+          path: '/',
+        });
+        reply.send(user);
+      },
+    );
+};
+
+export default authRoute;

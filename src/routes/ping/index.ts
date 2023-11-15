@@ -1,9 +1,9 @@
-import { FastifyInstance } from 'fastify'
+import { FastifyInstance } from 'fastify';
 
 const pingRoute = async (fastify: FastifyInstance) => {
   fastify.get('/', async (request, reply) => {
-    reply.send({ ping: 'pong' })
-  })
-}
+    reply.send({ ping: 'pong' });
+  });
+};
 
-export default pingRoute
+export default pingRoute;

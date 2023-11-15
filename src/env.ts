@@ -1,8 +1,10 @@
-import { envSchema, JSONSchemaType } from 'env-schema'
+import { JSONSchemaType, envSchema } from 'env-schema';
 
 interface Env {
-  PORT: number
-  DATABASE_URL: string
+  PORT: number;
+  DATABASE_URL: string;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
 }
 
 /**
@@ -20,7 +22,15 @@ const schema: JSONSchemaType<Env> = {
       type: 'string',
       default: 'postgres://postgres:postgres@localhost:5432/postgres',
     },
+    JWT_SECRET: {
+      type: 'string',
+      default: 'secret',
+    },
+    JWT_EXPIRES_IN: {
+      type: 'string',
+      default: '15m',
+    },
   },
-}
+};
 
-export const env = envSchema({ schema, dotenv: true })
+export const env = envSchema({ schema, dotenv: true });

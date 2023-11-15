@@ -1,7 +1,8 @@
-import Fastify from 'fastify'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import routes from './routes'
-import prismaPlugin from './plugins/prisma'
+import fastifyCookie from '@fastify/cookie';
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import Fastify from 'fastify';
+import { prismaPlugin } from './plugins/prisma';
+import routes from './routes';
 
 const init = async () => {
   const fastify = Fastify({
@@ -11,18 +12,18 @@ const init = async () => {
         target: 'pino-pretty',
       },
     },
-  }).withTypeProvider<TypeBoxTypeProvider>()
+  }).withTypeProvider<TypeBoxTypeProvider>();
 
   fastify.get('/', async function (request, reply) {
     reply.send({
       message: '🦄🌈✨👋🌎🌍🌏✨🌈🦄',
-    })
-  })
+    });
+  });
 
-  fastify.register(prismaPlugin)
-  fastify.register(routes)
+  fastify.register(fastifyCookie, {}).register(prismaPlugin);
+  fastify.register(routes);
 
-  return fastify
-}
+  return fastify;
+};
 
-export { init }
+export { init };

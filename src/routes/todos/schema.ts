@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox';
 
 const TodoSchema = Type.Object({
   id: Type.String(),
@@ -7,15 +7,15 @@ const TodoSchema = Type.Object({
   done: Type.Boolean(),
   createdAt: Type.Any(),
   updatedAt: Type.Any(),
-})
+});
 
 const CreateTodoSchema = Type.Object({
   title: Type.String(),
   description: Type.Optional(Type.String()),
-})
+});
 
 const UpdateTodoSchema = Type.Partial(
   Type.Pick(TodoSchema, ['title', 'description', 'done']),
-)
+);
 
-export { TodoSchema, CreateTodoSchema, UpdateTodoSchema }
+export { TodoSchema, CreateTodoSchema, UpdateTodoSchema };

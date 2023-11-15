@@ -1,8 +1,11 @@
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import { Type } from '@sinclair/typebox'
-import { PaginationQuerySchema, PaginationResponseSchema } from '../shared'
-import { TodoSchema, UpdateTodoSchema } from './schema'
-import { FastifyInstance } from 'fastify'
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import { Type } from '@sinclair/typebox';
+import { FastifyInstance } from 'fastify';
+
+import { guardPlugin } from '../../plugins/guard';
+import { ErrorSchema } from '../errors';
+import { PaginationQuerySchema, PaginationResponseSchema } from '../shared';
+import { CreateTodoSchema, TodoSchema, UpdateTodoSchema } from './schema';
 
 const todosRoute = async (fastify: FastifyInstance) => {
   fastify
@@ -18,38 +21,73 @@ const todosRoute = async (fastify: FastifyInstance) => {
         },
       },
       async (request, reply) => {
-        const { offset = 0, limit = 10 } = request.query
+        const { offset = 0, limit = 10 } = request.query;
 
         const todos = await fastify.prisma.todo.findMany({
           skip: offset,
           take: limit,
-        })
+        });
 
-        const total = await fastify.prisma.todo.count()
+        const total = await fastify.prisma.todo.count();
 
-        reply.send({ data: todos, total, offset, limit })
+        reply.send({ data: todos, total, offset, limit });
       },
     )
+    .get(
+      '/:id',
+      {
+        schema: {
+          params: Type.Object({
+            id: Type.String(),
+          }),
+          response: {
+            '200': TodoSchema,
+            '400': ErrorSchema,
+          },
+        },
+      },
+      async (request, reply) => {
+        const { id } = request.params;
+
+        const todo = await fastify.prisma.todo.findUnique({
+          where: {
+            id,
+          },
+        });
+
+        if (!todo) {
+          reply.status(404).send({ message: 'Not found' });
+          return;
+        }
+
+        reply.send(todo);
+      },
+    );
+
+  // 🔐 authorized route
+  fastify
+    .withTypeProvider<TypeBoxTypeProvider>()
+    .register(guardPlugin)
     .post(
       '/',
       {
         schema: {
-          body: Type.Object({
-            title: Type.String(),
-            description: Type.String(),
-          }),
+          body: CreateTodoSchema,
         },
       },
       async (request, reply) => {
-        const body = request.body
+        const { title, description } = request.body;
+        const { id: userId } = request.user;
+
         const todo = await fastify.prisma.todo.create({
           data: {
-            title: body.title,
-            description: body.description,
+            title,
+            description,
+            userId,
           },
-        })
+        });
 
-        reply.status(201).send(todo)
+        reply.status(201).send(todo);
       },
     )
     .put(
@@ -63,19 +101,38 @@ const todosRoute = async (fastify: FastifyInstance) => {
         },
       },
       async (request, reply) => {
-        const { id } = request.params
-        const body = request.body
+        const { id } = request.params;
+        const { title, description, done } = request.body;
+        const { id: userId } = request.user;
 
-        const todo = await fastify.prisma.todo.update({
-          where: { id },
-          data: {
-            title: body.title,
-            description: body.description,
-            done: body.done,
+        const todo = await fastify.prisma.todo.findFirst({
+          where: {
+            id,
           },
-        })
+        });
 
-        reply.send(todo)
+        if (!todo) {
+          reply.status(404).send({ message: 'Not found' });
+          return;
+        }
+
+        if (todo.userId !== userId) {
+          reply.status(403).send({ message: 'Forbidden' });
+          return;
+        }
+
+        const updatedTodo = await fastify.prisma.todo.update({
+          where: {
+            id,
+          },
+          data: {
+            title,
+            description,
+            done,
+          },
+        });
+
+        reply.send(updatedTodo);
       },
     )
     .delete(
@@ -88,17 +145,35 @@ const todosRoute = async (fastify: FastifyInstance) => {
         },
       },
       async (request, reply) => {
-        const { id } = request.params
+        const { id } = request.params;
+        const { id: userId } = request.user;
+
+        const todo = await fastify.prisma.todo.findFirst({
+          where: {
+            id,
+          },
+        });
+
+        if (!todo) {
+          reply.status(404).send({ message: 'Not found' });
+          return;
+        }
+
+        if (todo.userId !== userId) {
+          reply.status(403).send({ message: 'Forbidden' });
+          return;
+        }
 
         await fastify.prisma.todo.delete({
           where: {
             id,
+            userId,
           },
-        })
+        });
 
-        reply.status(204).send({ message: 'ok' })
+        reply.status(204).send({ message: 'ok' });
       },
-    )
-}
+    );
+};
 
-export default todosRoute
+export default todosRoute;
