@@ -1,6 +1,5 @@
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { FastifyInstance } from 'fastify';
-
 import { guardPlugin } from '../../plugins/guard';
 import { ErrorSchema } from '../errors';
 import { UserWithoutPasswordSchema } from './schema';
