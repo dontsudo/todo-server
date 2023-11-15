@@ -18,7 +18,7 @@ const schema: JSONSchemaType<Env> = {
     },
     DATABASE_URL: {
       type: 'string',
-      default: 'mongodb://localhost:27017',
+      default: 'postgres://postgres:postgres@localhost:5432/postgres',
     },
   },
 }
