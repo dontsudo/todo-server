@@ -1,14 +1,14 @@
-import fp from 'fastify-plugin'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import { PaginationQuerySchema, PaginationResponseSchema } from '../shared'
 import { TodoSchema, UpdateTodoSchema } from './schema'
+import { FastifyInstance } from 'fastify'
 
-const todoRoute = fp(async (fastify) => {
+const todoRoute = async (fastify: FastifyInstance) => {
   fastify
     .withTypeProvider<TypeBoxTypeProvider>()
     .get(
-      '/todos',
+      '/',
       {
         schema: {
           querystring: PaginationQuerySchema,
@@ -31,7 +31,7 @@ const todoRoute = fp(async (fastify) => {
       },
     )
     .post(
-      '/todos',
+      '/',
       {
         schema: {
           body: Type.Object({
@@ -53,7 +53,7 @@ const todoRoute = fp(async (fastify) => {
       },
     )
     .put(
-      '/todos/:id',
+      '//:id',
       {
         schema: {
           params: Type.Object({
@@ -78,7 +78,7 @@ const todoRoute = fp(async (fastify) => {
       },
     )
     .delete(
-      '/todos/:id',
+      '//:id',
       {
         schema: {
           params: Type.Object({
@@ -98,6 +98,6 @@ const todoRoute = fp(async (fastify) => {
         reply.send({ message: 'ok' })
       },
     )
-})
+}
 
 export default todoRoute

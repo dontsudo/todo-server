@@ -7,8 +7,8 @@ const PaginationQuerySchema = Type.Object({
 
 const PaginationResponseSchema = <T extends TSchema>(schema: T) =>
   Type.Object({
-    total: Type.Integer(),
     data: Type.Array(schema),
+    total: Type.Integer(),
     offset: Type.Integer(),
     limit: Type.Integer(),
   })

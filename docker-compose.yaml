@@ -1,19 +1,16 @@
 version: '3.8'
 services:
-  # replica set (required for prisma client)
-  # See: https://github.com/prisma/prisma/blob/main/docker/docker-compose.yml
-  mongo:
-    build: ./docker/mongodb_replica
+  postgres:
+    image: postgres:latest
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: prisma
-      MONGO_REPLICA_HOST: 127.0.0.1
-      MONGO_REPLICA_PORT: 27018
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: prisma
+      POSTGRES_DB: mydb
     ports:
-      - '27018:27018'
-    restart: always # restart between reboots
+      - '5432:5432'
+    restart: always
     healthcheck:
-      test: ['CMD', 'mongo', 'admin', '--port', '27018', '--eval', "db.adminCommand('ping')"]
+      test: ["CMD-SHELL", "pg_isready -U root"]
       interval: 5s
       timeout: 2s
       retries: 20
