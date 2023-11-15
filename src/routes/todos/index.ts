@@ -4,7 +4,7 @@ import { PaginationQuerySchema, PaginationResponseSchema } from '../shared'
 import { TodoSchema, UpdateTodoSchema } from './schema'
 import { FastifyInstance } from 'fastify'
 
-const todoRoute = async (fastify: FastifyInstance) => {
+const todosRoute = async (fastify: FastifyInstance) => {
   fastify
     .withTypeProvider<TypeBoxTypeProvider>()
     .get(
@@ -49,11 +49,11 @@ const todoRoute = async (fastify: FastifyInstance) => {
           },
         })
 
-        reply.send(todo)
+        reply.status(201).send(todo)
       },
     )
     .put(
-      '//:id',
+      '/:id',
       {
         schema: {
           params: Type.Object({
@@ -71,6 +71,7 @@ const todoRoute = async (fastify: FastifyInstance) => {
           data: {
             title: body.title,
             description: body.description,
+            done: body.done,
           },
         })
 
@@ -78,7 +79,7 @@ const todoRoute = async (fastify: FastifyInstance) => {
       },
     )
     .delete(
-      '//:id',
+      '/:id',
       {
         schema: {
           params: Type.Object({
@@ -95,9 +96,9 @@ const todoRoute = async (fastify: FastifyInstance) => {
           },
         })
 
-        reply.send({ message: 'ok' })
+        reply.status(204).send({ message: 'ok' })
       },
     )
 }
 
-export default todoRoute
+export default todosRoute

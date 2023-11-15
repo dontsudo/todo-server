@@ -1,6 +1,6 @@
 import argon from 'argon2'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import { CreateUserSchema, UserWithoutPasswordSchema } from '../user/schema'
+import { CreateUserSchema, UserWithoutPasswordSchema } from '../users/schema'
 import { ErrorSchema } from '../errors'
 import { LoginSchema } from './schema'
 import { FastifyInstance } from 'fastify'
